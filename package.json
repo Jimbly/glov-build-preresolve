@@ -1,0 +1,24 @@
+{
+  "name": "glov-build-preresolve",
+  "version": "0.0.1",
+  "description": "Path resolving task processor for glov-build",
+  "main": "index.js",
+  "keywords": [
+    "glov-build",
+    "glov",
+    "glovjs"
+  ],
+  "author": "Jimb Esser (https://github.com/Jimbly)",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:Jimbly/glov-build-preresolve.git"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "glov-async": "^0.0.1"
+  },
+  "devDependencies": {},
+  "peerDependencies": {
+    "glov-build": ">= 0.0.18"
+  }
+}
