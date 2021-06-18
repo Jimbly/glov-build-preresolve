@@ -1,7 +1,7 @@
 {
   "name": "glov-build-preresolve",
-  "version": "0.0.1",
-  "description": "Path resolving task processor for glov-build",
+  "version": "0.0.2",
+  "description": "Sub-module path resolving task processor for glov-build",
   "main": "index.js",
   "keywords": [
     "glov-build",

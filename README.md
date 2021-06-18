@@ -1,4 +1,4 @@
-Path resolving task processor for [glov-build](https://github.com/Jimbly/glov-build)
+Sub-module path resolving task processor for [glov-build](https://github.com/Jimbly/glov-build)
 =============================
 
 By default, resolves any referenced `'glov/foo.js'` strings to appropriate relative paths, while respecting client/server/common folders.  This is useful if you have a fork of GLOV.js or similar framework inside your project and want your code to be able to reference the module in the standard node module syntax without messing around with modifying each of Node/Browserify/WebPack/etc's module search paths/mechanisms.
@@ -28,7 +28,16 @@ Options
 
 Example usage:
 ```javascript
+const gb = require('glov-build');
 const preresolve = require('glov-build-preresolve');
+
+gb.configure({
+  source: 'src',
+  statedir: 'out/.gbstate',
+  targets: {
+    dev: 'out',
+  },
+});
 
 gb.task({
   name: 'preresovle_glov',
@@ -39,15 +48,16 @@ gb.task({
   name: 'preresolve_common'
   target: 'dev',
   ...preresolve({
-    dir_map: '': ['common'],
+    dir_map: { '': ['common'] },
     path_regex: /'common\/([^']+\.js)'/g,
   }),
 });
 
 ```
 
-Example input, `client/foo/bar.js` in a fork of a GLOV.js project:
+Example input in a fork of a GLOV.js project, which also contains a `src/common/mything.js`.
 ```javascript
+// src/client/foo/bar.js
 const foo = require('glov/engine.js');
 const bar = require('glov/util.js');
 const baz = require('common/mything.js');
