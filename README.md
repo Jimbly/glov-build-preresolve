@@ -48,6 +48,7 @@ gb.task({
   name: 'preresolve_common'
   target: 'dev',
   ...preresolve({
+    source: 'preresovle_glov',
     dir_map: { '': ['common'] },
     path_regex: /'common\/([^']+\.js)'/g,
   }),
