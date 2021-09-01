@@ -6,7 +6,7 @@ By default, resolves any 'glov/foo.js' strings to appropriate relative paths ass
 Example package.json entry:
 ```json
 {
-  "dependencies": {
+  "devDependencies": {
     "glov": "file:./src/glov"
   }
 }
