@@ -1,22 +1,16 @@
 //////////////////////////////////////////////////////////////////////////
-// By default, resolves any 'glov/foo.js' strings to appropriate relative paths,
-// while respecting client/server/common folders.
+// By default, resolves any 'glov/foo.js' strings to appropriate relative
+// paths assuming glov is located in the root of the source.
 
-const { asyncEachSeries } = require('glov-async');
 const path = require('path');
 
 const default_options = {
   // Source for resolving paths
   source: 'source',
-  // map from input filename to what directories to search
-  dir_map: {
-    'client/': ['client/glov', 'common/glov'],
-    'server/': ['server/glov', 'common/glov'],
-    'common/': ['common/glov'],
+  // Map from module name to local path within the source
+  modules: {
+    glov: 'glov',
   },
-  // regex to find a path string that should be converted into a relative path to the actual file
-  // Note: should be `g`lobal flagged, and include leading and trailing quotes
-  path_regex: /'glov\/([^']+\.js)'/g,
   filter: /\.js$/,
 };
 
@@ -39,7 +33,14 @@ function defaults(dest, src) {
 module.exports = function glovPreResolve(params) {
   params = params || {};
   params = defaults(params, default_options);
-  let { source, dir_map, filter, path_regex } = params;
+  let { source, filter, modules } = params;
+  let module_data = {};
+  for (let key in modules) {
+    module_data[key] = {
+      path_regex: new RegExp(`'${key}/([^']+\\.js)'`, 'g'),
+      dest: modules[key],
+    };
+  }
   return {
     input: [`${source}:**`],
     type: 'single',
@@ -49,57 +50,28 @@ module.exports = function glovPreResolve(params) {
         job.out(file);
         return void done();
       }
-      let search_dirs = [];
-      for (let prefix in dir_map) {
-        if (file.relative.startsWith(prefix)) {
-          search_dirs = search_dirs.concat(dir_map[prefix]);
-        }
-      }
-      if (!search_dirs.length) {
-        // Maybe fine for this to not be a warning?
-        job.warn(`${file.relative}: Does not match any entry in 'dir_map'`);
-        job.out(file);
-        return void done();
-      }
       let contents = file.contents.toString();
-      let files_to_search = [...contents.matchAll(path_regex)].map((a) => a[1]);
-      if (!files_to_search.length) {
+      let count = 0;
+      Object.keys(module_data).forEach(function (key) {
+        let { path_regex, dest } = module_data[key];
+        contents = contents.replace(path_regex, function (full, filename) {
+          ++count;
+          let relative = forwardSlashes(path.relative(path.dirname(file.relative), `${dest}/${filename}`));
+          if (relative[0] !== '.') {
+            relative = `./${relative}`;
+          }
+          return `'${relative}'`;
+        });
+      });
+      if (!count) {
         job.out(file);
         return void done();
       }
-      let mappings = {};
-      asyncEachSeries(files_to_search, (filename, next) => {
-        asyncEachSeries(search_dirs, (search_dir, next_sub) => {
-          let search_file = `${search_dir}/${filename}`;
-          job.depAdd(`${source}:${search_file}`, (err, contents1) => {
-            if (err) {
-              return void next_sub(err);
-            }
-            if (contents1) {
-              let relative = forwardSlashes(path.relative(path.dirname(file.relative), search_file));
-              if (relative[0] !== '.') {
-                relative = `./${relative}`;
-              }
-              mappings[filename] = relative;
-              return void next(); // skipping out of inner asyncSeries
-            }
-            next_sub();
-          });
-        }, (err) => {
-          next(err || `Could not resolve path to ${filename}`);
-        });
-      }, (err) => {
-        if (err) {
-          return void done(err);
-        }
-        job.out({
-          relative: file.relative,
-          contents: contents.replace(path_regex, function (full, filename) {
-            return `'${mappings[filename]}'`;
-          }),
-        });
-        done();
+      job.out({
+        relative: file.relative,
+        contents,
       });
+      done();
     },
   };
 };
