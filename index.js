@@ -37,7 +37,7 @@ module.exports = function glovPreResolve(params) {
   let module_data = {};
   for (let key in modules) {
     module_data[key] = {
-      path_regex: new RegExp(`'${key}/([^']+\\.js)'`, 'g'),
+      path_regex: new RegExp(`['"]${key}/([^'"]+\\.js)['"]`, 'g'),
       dest: modules[key],
     };
   }
