@@ -17,6 +17,6 @@
   "dependencies": {},
   "devDependencies": {},
   "peerDependencies": {
-    "glov-build": ">= 0.0.31"
+    "glov-build": ">= 0.0.32"
   }
 }
