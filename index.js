@@ -73,5 +73,8 @@ module.exports = function glovPreResolve(params) {
       });
       done();
     },
+    version: [
+      params,
+    ],
   };
 };
