@@ -4,6 +4,12 @@
 
 const path = require('path');
 
+function defaultPathRegexGenerator(key) {
+  // Old default:
+  //  return new RegExp(`['"]${key}/([^'"]+\\.js)['"]`, 'g');
+  return new RegExp(`['"]${key}/([^'"]+)['"]`, 'g');
+}
+
 const default_options = {
   // Source for resolving paths
   source: 'source',
@@ -12,6 +18,7 @@ const default_options = {
     glov: 'glov',
   },
   filter: /\.js$/,
+  path_regex_generator: defaultPathRegexGenerator,
 };
 
 // Another example:
@@ -33,11 +40,11 @@ function defaults(dest, src) {
 module.exports = function glovPreResolve(params) {
   params = params || {};
   params = defaults(params, default_options);
-  let { source, filter, modules } = params;
+  let { source, filter, modules, path_regex_generator } = params;
   let module_data = {};
   for (let key in modules) {
     module_data[key] = {
-      path_regex: new RegExp(`['"]${key}/([^'"]+\\.js)['"]`, 'g'),
+      path_regex: path_regex_generator(key),
       dest: modules[key],
     };
   }
@@ -75,6 +82,7 @@ module.exports = function glovPreResolve(params) {
     },
     version: [
       params,
+      2,
     ],
   };
 };
